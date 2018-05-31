@@ -10,6 +10,9 @@ trash/
 !README.md
 TODO.md
 
+# PyCharm:
+.idea
+
 # Python
 *.pyc
 __pycache__/
