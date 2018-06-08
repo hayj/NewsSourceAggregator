@@ -25,4 +25,8 @@ class RssFeedPlug:
 
     @staticmethod
     def getPunctualFeed(rss):
-        return feedparser.parse(rss)
+        data =  feedparser.parse(rss)
+        if data.bozo == 1:
+            raise data.bozo_exception
+        return data
+

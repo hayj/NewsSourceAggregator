@@ -1,15 +1,17 @@
 from newssourceaggregator.newssender import NewsSender
 from newssourceaggregator.rssFeedPlug import RssFeedPlug
 from newssourceaggregator.rssparser import RequiredDataStruct
-from systemtools.basics import getDictSubElement
+from systemtools.basics import *
 from newssourceaggregator.rssparser import RssParser
 from time import sleep
 import threading
 import time
 import datetime
 import json
+import csv
 
 CFG_FILE_PATH="../parserconfig.json"
+
 
 class NewsSourceAgent:
 
@@ -29,7 +31,7 @@ class NewsSourceAgent:
             for section in unparsedData.entries:
                 self.fullData.append(RequiredDataStruct())
                 timeID = time.time()
-                date = datetime.datetime.fromtimestamp(timeID)
+                date = datetime.datetime.   fromtimestamp(timeID)
                 self.fullData[-1].crawling_timestamp = date
                 self.fullData[-1].agent = self.source.type
                 for key in klist:
@@ -54,13 +56,19 @@ class NewsSourceAgent:
 
 
 if __name__ == '__main__':
-    print("Hello there !")
+    handle = open('rss_urls.csv')
+    data = handle.read()
+    for line in data.splitlines():
+        url = line.split()[1]
+        tmp = NewsSourceAgent(source=RssFeedPlug(url), parser=RssParser(CFG_FILE_PATH))
+        threading.Thread(target=tmp.gatherUrls).start()
+
     nsa = NewsSourceAgent(source=RssFeedPlug("https://www.judgehype.com/nouvelles.xml"), parser=RssParser(CFG_FILE_PATH))
-#    nsa.gatherUrls()
-    nnsa = NewsSourceAgent(source=RssFeedPlug("http://www.lefigaro.fr/rss/figaro_actualites.xml", timer=90), parser=RssParser(CFG_FILE_PATH))
-#    nnsa.gatherUrls()
+    nnsa = NewsSourceAgent(source=RssFeedPlug("http://www.lefigaro.fr/rss/figaro_actualites.xml", timer=90),
+                           parser=RssParser(CFG_FILE_PATH))
     threading.Thread(target=nsa.gatherUrls).start()
     threading.Thread(target=nnsa.gatherUrls).start()
 
+    handle.close()
     while 1:
         continue

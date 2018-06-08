@@ -21,9 +21,12 @@ class Controller:
         channel.basic_ack(delivery_tag=method.delivery_tag)
         if data['link'] is not None and data['link'] not in self.collection:
             self.collection.insert({'version': self.version, 'url': data['link'], 'source': data})
-
-       # self.collection.insert()
+        else:
+            print("An error has occured while attempting to write to db")
+            print(data['link'] in self.collection)
 
 
 if __name__ == "__main__":
     c = Controller()
+    print(c.collection.count())
+    print(c.collection.show(c.collection.count()))
