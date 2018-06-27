@@ -1,4 +1,5 @@
 ## All passwords are temporary
+
 import json
 from flask import Flask, request
 from sqlalchemy import create_engine
@@ -14,14 +15,16 @@ class AuthenticationError(Exception):
 class Authentication:
     def __init__(self):
         self.authDB = MongoCollection('auth_db', "auth", indexOn=['login'],
-                                      host='localhost', user=None, password=None, version='0.0.1')
+                                      host='localhost', user="Ajod", password="8kp^U_R3", version='0.0.1')
 
-    def authentify(self, login='', password=''):
+    def authentify(self, login, password):
+        if not login or not password:
+            raise AuthenticationError("Authentication failed: login and/or password not provided")
         if login in self.authDB:
             if self.authDB[login]['password'] == password:
-                return 2345678
-            return -2
-        return -1
+                return self.authDB[login]['password']
+            raise AuthenticationError("Authentication failed: incorrect password")
+        raise AuthenticationError('Authentication failed: incorrect login')
 
     def register(self, login, password):
         if login and password:
@@ -32,10 +35,5 @@ class Authentication:
 
 if __name__ == '__main__':
     au = Authentication()
-    au.register('Ajod', 'Renewal42')
-    token = au.authentify('Ajod', 'Renewal42')
-    if token == -1:
-        raise AuthenticationError('Authentication failed: incorrect login')
-    elif token == -2:
-        raise AuthenticationError('Authentication failed: incorrect password')
+    au.authentify('Ajod', 'Renewal42')
     print("Authentified properly")

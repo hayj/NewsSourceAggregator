@@ -23,7 +23,7 @@ class Controller:
             self.collection.insert({'version': self.version, 'url': data['link'], 'source': data})
         else:
             print("An error has occured while attempting to write to db")
-            print(data['link'] in self.collection)
+            print("Link already in colleciton ? : " +data['link'] in self.collection)
 
 
 if __name__ == "__main__":

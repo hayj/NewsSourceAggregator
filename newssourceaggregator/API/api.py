@@ -109,9 +109,17 @@ class News(Resource):
 if __name__ == '__main__':
     host = '129.175.25.243'
     collection = MongoCollection("news_db", "news", indexOn=['url'],
-                                 host='localhost', user=None, password=None, version=__version__)
+                                 host='localhost', user="Ajod", password="8kp^U_R3", version=__version__)
     app = Flask(__name__)
     api = Api(app)
+
+    # api.add_resource(Auth, '/auth/<login>/<password>')
+    # => stocker ça dans auth_db mongo
+    # => renvoyer un access token (infini ? temporaire ? tableau de tokens autorisés en global ?)
+    # => authentifier toutes les AUTRES requêtes par jean michel token
+
+    # /!\ WARNING /!\
+    # Différencier les requêtes d'API de l'appli mobile et celles des systèmes de recommandation. Nouveau fichier ?
 
     api.add_resource(News.ID, '/news/id/<id>')
     api.add_resource(News.URL, '/news/url/<path:url>')
@@ -119,4 +127,4 @@ if __name__ == '__main__':
     api.add_resource(News.RangeTimestamp, '/news/range_timestamp/<recent>/<oldest>')
     api.add_resource(News.URL.Bulk, '/news/url/bulk/<amount>')
 
-    app.run(port=4242, debug=False, host='0.0.0.0')
+    app.run(port=4243, debug=False, host='0.0.0.0')
