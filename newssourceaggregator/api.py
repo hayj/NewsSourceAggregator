@@ -7,7 +7,7 @@
 #   - Deny of Service (request timer for each puller ID ? » Credentials)
 #   -
 
-
+import ssl
 import json
 import time
 import random
@@ -107,6 +107,9 @@ class News(Resource):
 
 
 if __name__ == '__main__':
+    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
+    context.load_cert_chain('$HOME' + '/NewsSourceAggregator/newssourceaggregator/certs/host.cert',
+                            '$HOME' + '/NewsSourceAggregator/newssourceaggregator/certs/host.key')
     host = '129.175.25.243'
     collection = MongoCollection("news_db", "news", indexOn=['url'],
                                  host='localhost', user="Ajod", password="8kp^U_R3", version=__version__)
@@ -127,4 +130,4 @@ if __name__ == '__main__':
     api.add_resource(News.RangeTimestamp, '/news/range_timestamp/<recent>/<oldest>')
     api.add_resource(News.URL.Bulk, '/news/url/bulk/<amount>')
 
-    app.run(port=4243, debug=False, host='0.0.0.0')
+    app.run(port=4243, debug=False, host='0.0.0.0', ssl_context=context)
