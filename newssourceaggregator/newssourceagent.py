@@ -1,7 +1,9 @@
-from newssourceaggregator.rssparser import RequiredDataStruct
-from newssourceaggregator.rssFeedPlug import RssFeedPlug
-from newssourceaggregator.newssender import NewsSender
-from newssourceaggregator.rssparser import RssParser
+import sys, os
+sys.path.append("/".join(os.path.abspath(__file__).split("/")[0:-2]))
+from rssparser import RequiredDataStruct
+from rssFeedPlug import RssFeedPlug
+from newssender import NewsSender
+from rssparser import RssParser
 from systemtools.basics import *
 from time import sleep
 import threading
@@ -10,7 +12,7 @@ import time
 import json
 import csv
 
-CFG_FILE_PATH="../parserconfig.json"
+CFG_FILE_PATH="./parserconfig.json"
 
 
 class NewsSourceAgent:

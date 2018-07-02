@@ -1,5 +1,7 @@
-from newssourceaggregator.parser import Parser
-from newssourceaggregator.parser import RequiredDataStruct
+import sys, os
+sys.path.append("/".join(os.path.abspath(__file__).split("/")[0:-2]))
+from parser import Parser
+from parser import RequiredDataStruct
 from copy import copy
 import json
 

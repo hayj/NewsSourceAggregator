@@ -4,7 +4,8 @@ import pika
 class NewsReceiver:
     def __init__(self, host='localhost', queue_name='news_data_queue'):
 
-        self.cr = pika.PlainCredentials(username='Ajod', password='hello')
+        #self.cr = pika.PlainCredentials(username='Ajod', password='hello')
+        self.cr = pika.PlainCredentials(username='guest', password='guest')
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host, credentials=self.cr))
         self.channel = self.connection.channel()
         self.host = host

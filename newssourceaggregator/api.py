@@ -97,7 +97,7 @@ class News(Resource):
                         if idx == amount:
                             break
                     i += 1
-                return dumps({'data': package})
+                return {'data': package}
 
     class LastUrl(Resource):
         def get(self, lasturl):

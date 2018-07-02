@@ -1,6 +1,8 @@
+import sys, os
+sys.path.append("/".join(os.path.abspath(__file__).split("/")[0:-2]))
 import json
 from databasetools.mongo import MongoCollection
-from newssourceaggregator.newsreceiver import NewsReceiver
+from newsreceiver import NewsReceiver
 
 # TODO: 1. Listen on queue, receive data, store them in mongodb
 # TODO: 2. purge doubles in db
