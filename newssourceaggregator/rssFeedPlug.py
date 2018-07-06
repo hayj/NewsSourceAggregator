@@ -21,7 +21,11 @@ class RssFeedPlug:
         while 1:
             data = feedparser.parse(self.source)
             time.sleep(self.waitTimer)
-            print(data)
+            if self.source == "http://www.lefigaro.fr/rss/figaro_actualites.xml":
+                with open("./judge.txt", 'w+').write(data):
+                    pass
+            else:
+                print(data)
 
     @staticmethod
     def getPunctualFeed(rss):

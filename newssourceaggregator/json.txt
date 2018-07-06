@@ -1,0 +1,26 @@
+JSON is a format based on two things : key and value (that's called a dictionary)
+Dictionaries start with a bracket { and close with a bracket }
+Key is always plain text between DOUBLE quotes, then a double colon introduces the Value.
+Each key/value pair is separated by a comma.
+Value can be a couple things :
+Plain text
+Numbers
+Objects (another dictionary for example)
+A list (or Array)
+A boolean (true or false)
+If value is a list, it is between brackets [] and each value is separated by a comma.
+Full json example (properly indented but it doesn't need to be) :
+
+{
+	"TextKey" : "Plain text value",
+	"NumberKey" : 42,
+	"ArrayKey": ["List", "of", 4, "things"],
+	"booleanKey":true,
+	"ObjectKey": {
+			"ObjectFirst Key":"objectValue"
+		     }
+}
+
+If anything, it can be null (without quotes) but it cannot be nothing.
+
+Love you girls <3 hope it helps, and if not, that's means ya'll smart af.

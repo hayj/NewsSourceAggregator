@@ -1,15 +1,5 @@
-# This API should be able to :
-# - Connect to any mongoDB collection
-# - Register researcher teams => OAuth2
-# - Allow researchers to pull truckloads of data from the news_db
-# - What to watch for ?
-#   - Credentials
-#   - Deny of Service (request timer for each puller ID ? » Credentials)
-#   -
-
+import os
 import ssl
-import json
-import time
 import random
 import pymongo
 from datetime import datetime as dt
@@ -19,7 +9,6 @@ from bson.objectid import ObjectId
 from bson.json_util import dumps
 from flask_restful import Resource, Api
 from databasetools.mongo import MongoCollection
-#from flask.ext.jsonify import *
 
 __version__ = '0.0.4' # Includes timestamp range request
 MAX_PACKAGE_SIZE = 1000
@@ -105,24 +94,28 @@ class News(Resource):
             if data:
                 return dumps(data)
 
+# TEMP:
+#   https://renewal.com/api/
+#   /url : /range /range_timestamp || Category ? Containing keyword ?
+#   /user : /browsing_data /user_data /social_networks ?
+#   /news : /id
+
+
 
 if __name__ == '__main__':
+    # We create a context for SSL certification
     context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    context.load_cert_chain('$HOME' + '/NewsSourceAggregator/newssourceaggregator/certs/host.cert',
+    context.load_cert_chain(os.environ['HOME'] + '/NewsSourceAggregator/newssourceaggregator/certs/host.cert',
                             '$HOME' + '/NewsSourceAggregator/newssourceaggregator/certs/host.key')
-    host = '129.175.25.243'
+
+    #host = '129.175.25.243'
+    host = '0.0.0.0'
     collection = MongoCollection("news_db", "news", indexOn=['url'],
                                  host='localhost', user="Ajod", password="8kp^U_R3", version=__version__)
+
+    # We define an entry point for the API
     app = Flask(__name__)
     api = Api(app)
-
-    # api.add_resource(Auth, '/auth/<login>/<password>')
-    # => stocker ça dans auth_db mongo
-    # => renvoyer un access token (infini ? temporaire ? tableau de tokens autorisés en global ?)
-    # => authentifier toutes les AUTRES requêtes par jean michel token
-
-    # /!\ WARNING /!\
-    # Différencier les requêtes d'API de l'appli mobile et celles des systèmes de recommandation. Nouveau fichier ?
 
     api.add_resource(News.ID, '/news/id/<id>')
     api.add_resource(News.URL, '/news/url/<path:url>')
@@ -130,4 +123,4 @@ if __name__ == '__main__':
     api.add_resource(News.RangeTimestamp, '/news/range_timestamp/<recent>/<oldest>')
     api.add_resource(News.URL.Bulk, '/news/url/bulk/<amount>')
 
-    app.run(port=4243, debug=False, host='0.0.0.0', ssl_context=context)
+    app.run(port=4243, debug=False, host=host, ssl_context=context)

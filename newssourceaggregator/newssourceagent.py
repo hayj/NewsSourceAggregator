@@ -51,26 +51,44 @@ class NewsSourceAgent:
 
             for struct in self.fullData:
                 if struct.datadict is not None:
+                    if self.source.source == "https://www.judgehype.com/nouvelles.xml":
+                        f = open("./judge.txt", "a")
+                        f.write(struct.datadict['link'] + '\n')
                     self.sender.send(json.dumps(struct.datadict))
                 cache.add(struct.datadict['link'])
 
-            sleep(self.source.waitTimer)
+            self.sender.connection.sleep(self.source.waitTimer)
 
 
 if __name__ == '__main__':
     handle = open('rss_urls.csv')
     data = handle.read()
+    threadnumber = 0
+    threadHandles = []
+    NSAhandles = []
     for line in data.splitlines():
         url = line.split()[1]
         tmp = NewsSourceAgent(source=RssFeedPlug(url), parser=RssParser(CFG_FILE_PATH))
-        threading.Thread(target=tmp.gatherUrls).start()
+        NSAhandles.append(tmp)
+        threadHandles.append(threading.Thread(target=tmp.gatherUrls))
+        threadnumber += 1
+        threadHandles[-1].start()
 
     nsa = NewsSourceAgent(source=RssFeedPlug("https://www.judgehype.com/nouvelles.xml"), parser=RssParser(CFG_FILE_PATH))
     nnsa = NewsSourceAgent(source=RssFeedPlug("http://www.lefigaro.fr/rss/figaro_actualites.xml", timer=90),
                            parser=RssParser(CFG_FILE_PATH))
     threading.Thread(target=nsa.gatherUrls).start()
     threading.Thread(target=nnsa.gatherUrls).start()
+    print(threadnumber)
 
     handle.close()
     while 1:
+        threadnumber = 0
+        time.sleep(5)
+        for thread in threadHandles:
+            if thread.is_alive():
+                threadnumber += 1
+            else:
+                threadHandles.remove(thread)
+        print(threadnumber)
         continue
