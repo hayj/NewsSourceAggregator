@@ -1,24 +1,111 @@
-import os
-import ssl
+import sys, os
+sys.path.append("/".join(os.path.abspath(__file__).split("/")[0:-2]))
+
+import string
 import random
 import pymongo
-from datetime import datetime as dt
 from datetime import timedelta
+from bson.json_util import dumps
 from flask import Flask, request
 from bson.objectid import ObjectId
-from bson.json_util import dumps
+from datetime import datetime as dt
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 from flask_restful import Resource, Api
+from passlib.context import CryptContext
+from sqlalchemy_declarative import Base, User
 from databasetools.mongo import MongoCollection
 
 __version__ = '0.0.4' # Includes timestamp range request
 MAX_PACKAGE_SIZE = 1000
 
-# We define a default date to pull news from at 24h from current UTC time
+# We define a default time range to pull news from at 24h from current UTC time
 DEFAULT_DATE_FORMAT = "%Y-%m-%d_%H:%M"
 DEFAULT_TIME_RANGE = timedelta(days=1)
 DEFAULT_TIME_OLDEST = dt.strftime(dt.utcnow() - DEFAULT_TIME_RANGE, DEFAULT_DATE_FORMAT)
 DEFAULT_TIME_RECENT = dt.utcnow().strftime(DEFAULT_DATE_FORMAT)
 
+
+def generateToken():
+    """
+        Generates the authentication token to be return to a user for easy connection.
+    """
+    return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(16))
+
+
+# Start of the Authentication part of the API
+
+class AuthenticationError(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
+class PasswordHasher:
+    def __init__(self):
+        self.password_hash = None
+        self.myctx = CryptContext(schemes=["sha256_crypt"])
+
+    def hash_password(self, password):
+        self.password_hash = self.myctx.hash(password)
+        return self.password_hash
+
+    def verify_password(self, password, user):
+        """
+            :param:
+                password: the user's unencrypted password
+                user: an instance of a "Base" class from the database. Returned from session.query
+
+            :return:
+                True/False by comparing password with ciphered password from the database
+        """
+        return self.myctx.verify(password, user.password)
+
+
+class Auth(Resource):
+    def get(self, email, password):
+        """
+        Endpoint for basic authentication of an already registered user
+        :param email: The user's email address
+        :param password: The user's unciphered password
+        :return: User token from database, which can be subsequently sent to auth/token for next authentications
+        """
+        if not email:
+            return "ERROR: User not found", 404
+        usr = session.query(User).filter(User.email == email).first()
+        if not usr or psswdhash.verify_password(password, usr) is False:
+            return "ERROR: Incorrect password", 403
+
+        return session.query(User).filter(User.email == email).first().token, 201
+
+    class Test(Resource):
+        """
+            Basic ping test
+        """
+        def get(self):
+            return "OK", 203
+
+    class Register(Resource):
+        def put(self, email, password):
+            """
+            Endpoint for registering a new user
+            :param email: The user's email address
+            :param password: The user's unciphered password
+            :return: User token from database, which can be subsequently sent to auth/token for next authentications
+            """
+            if email and password:
+                if session.query(User).filter(User.email == email).first() is not None:
+                    return {"error_type": "AuthenticationError(ERROR: Email already in use)",
+                            "status_code": 400}
+                new_user = User(email=email, password=psswdhash.hash_password(password), token=generateToken())
+                session.add(new_user)
+                session.commit()
+                return session.query(User).filter(User.email == email).first().token, 200
+
+        def get(self, email, password):
+            return self.put(email, password)
+
+# END Authentication API
+# Start of news data API
 
 def updateTime():
     global DEFAULT_TIME_OLDEST
@@ -94,22 +181,18 @@ class News(Resource):
             if data:
                 return dumps(data)
 
-# TEMP:
-#   https://renewal.com/api/
-#   /url : /range /range_timestamp || Category ? Containing keyword ?
-#   /user : /browsing_data /user_data /social_networks ?
-#   /news : /id
-
-
 
 if __name__ == '__main__':
     # We create a context for SSL certification
-    context = ssl.SSLContext(ssl.PROTOCOL_TLSv1_2)
-    context.load_cert_chain(os.environ['HOME'] + '/NewsSourceAggregator/newssourceaggregator/certs/host.cert',
-                            '$HOME' + '/NewsSourceAggregator/newssourceaggregator/certs/host.key')
+    engine = create_engine('sqlite:///sqlalchemy_example_auth.db')
+    Base.metadata.create_all(engine)
+    Base.metadata.bind = engine
+    DBSession = sessionmaker(bind=engine)
+    session = DBSession()
 
-    #host = '129.175.25.243'
-    host = '0.0.0.0'
+    psswdhash = PasswordHasher()
+
+    host = '129.175.25.243'
     collection = MongoCollection("news_db", "news", indexOn=['url'],
                                  host='localhost', user="Ajod", password="8kp^U_R3", version=__version__)
 
@@ -122,5 +205,8 @@ if __name__ == '__main__':
     api.add_resource(News.LastUrl, '/news/lasturl/<path:lasturl>')
     api.add_resource(News.RangeTimestamp, '/news/range_timestamp/<recent>/<oldest>')
     api.add_resource(News.URL.Bulk, '/news/url/bulk/<amount>')
+    api.add_resource(Auth, '/auth/<string:email>/<string:password>')
+    api.add_resource(Auth.Register, '/auth/register/<string:email>/<string:password>')
+    api.add_resource(Auth.Test, '/auth/test')
 
-    app.run(port=4243, debug=False, host=host, ssl_context=context)
+    app.run(port=4243, debug=False, host=host)

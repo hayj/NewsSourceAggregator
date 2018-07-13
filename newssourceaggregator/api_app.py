@@ -4,9 +4,8 @@ import string
 import random
 from flask import Flask
 from flask_restful import Resource, Api
-from passlib.apps import custom_app_context as pwd_context
-from passlib.context import CryptContext
 from databasetools.mongo import MongoCollection
+from passlib.context import CryptContext
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_declarative import Base, User
@@ -34,6 +33,8 @@ class PasswordHasher:
         return self.password_hash
 
     def verify_password(self, password, user):
+        print(user.password)
+        print(self.myctx.hash(password))
         return self.myctx.verify(password, user.password)
 
 
@@ -58,34 +59,11 @@ class Auth(Resource):
                     return "Error: email already in use", 400
                 new_user = User(email=email, password=psswdhash.hash_password(password), token=generateToken())
                 session.add(new_user)
+                session.commit()
                 return session.query(User).filter(User.email == email).first().token
 
         def get(self, email, password):
             return self.put(email, password)
-
-
-#class Auth(Resource):
-#    def get(self, email):
-#        if not email:
-#            return None
-#        if email in authDB:
-#            if authDB[email]['token']:
-#                return authDB[email]['token'], 201
-#            return "ERROR: User wrongfully initialized. Please DELETE user first", 400
-#        return "ERROR: User not found", 404
-#
-#    class Register(Resource):
-#        def put(self, email, password):
-#            if email:
-#                if email in authDB:
-#                    return authDB[email]['token'], 200
-#                authDB.insert({'email': email, 'token': generateToken()})
-#                return authDB[email]['token'], 200
-#            return "ERROR: No email provided", 400
-#
-#    class Test(Resource):
-#        def get(self):
-#            return "OK", 203
 
 
 if __name__ == "__main__":
