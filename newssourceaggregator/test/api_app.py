@@ -33,8 +33,6 @@ class PasswordHasher:
         return self.password_hash
 
     def verify_password(self, password, user):
-        print(user.password)
-        print(self.myctx.hash(password))
         return self.myctx.verify(password, user.password)
 
 
@@ -75,7 +73,7 @@ if __name__ == "__main__":
 
     psswdhash = PasswordHasher()
 
-    host = '129.175.25.243'
+    host = '129.175.22.71'
 
     app = Flask(__name__)
     api = Api(app)
@@ -84,7 +82,7 @@ if __name__ == "__main__":
     api.add_resource(Auth.Register, '/auth/register/<string:email>/<string:password>')
     api.add_resource(Auth.Test, '/auth/test')
 
-    app.run(port=4242, debug=False, host=host)
+    app.run(port=4243, debug=False, host=host)
     pass
     authDB = MongoCollection('auth_db', "auth", indexOn=['email'],
                              host='localhost', user="Ajod", password="8kp^U_R3", version='0.0.1')
