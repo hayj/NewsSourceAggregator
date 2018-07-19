@@ -77,6 +77,41 @@ class Auth(Resource):
 
         return session.query(User).filter(User.email == email).first().token, 201
 
+    # /auth/email/password PUT
+    # /auth/email/sn/id PUT
+    # /auth/bob@bob.fr/sn="Email"/lol
+    # /auth/bob@bob.fr/sn="fb"/98765
+
+    def put(self, email, sn, id):
+        if not email:
+            return "ERROR: User not found", 404
+        if not sn:
+            return "ERROR: No auth method defined", 404
+        if not id:
+            return "ERROR: No password/id given", 404
+
+        print("Got args : email = " + email + " sn = " + sn + " id = " + id)
+        if session.query(User).filter(User.email == email).first() is not None:
+            return {"error_type": "AuthenticationError(ERROR: Email already in use)",
+                    "status_code": 400}
+
+        if sn == "email":
+            new_user = User(email=email, password=psswdhash.hash_password(id), token=generateToken())
+            session.add(new_user)
+            session.commit()
+
+        elif sn == "fb":
+            new_user = User(email=email, password=None, token=generateToken(), fb=True, fb_id=id)
+            session.add(new_user)
+            session.commit()
+        elif sn == "google":
+            pass
+        else:
+            return {"error_type": "AuthenticationError(ERROR: Invalid query)",
+                    "status_code": 400}
+        return {"user_token": session.query(User).filter(User.email == email).first().token,
+                "status_code": 200}
+
     class Test(Resource):
         """
             Basic ping test
@@ -182,6 +217,17 @@ class News(Resource):
                 return dumps(data)
 
 
+class AppUser(Resource):
+    def get(self, user_id):
+        pass
+
+    class Events(Resource):
+        def post(self, user_id, data):
+            eventcollection.insert({'user_id':user_id, 'event_data':data})
+            pass
+
+# eventcollection.insert {user_id:1, data: {axaxaxa}}
+
 if __name__ == '__main__':
     # We create a context for SSL certification
     engine = create_engine('sqlite:///sqlalchemy_example_auth.db')
@@ -195,18 +241,24 @@ if __name__ == '__main__':
     host = '129.175.25.243'
     collection = MongoCollection("news_db", "news", indexOn=['url'],
                                  host='localhost', user="Ajod", password="8kp^U_R3", version=__version__)
+    eventcollection = MongoCollection("news_db", "events", indexOn=['user_id'],
+                                      host='localhost', user='Ajod', password="8kp^U_R3", version=__version__)
 
     # We define an entry point for the API
     app = Flask(__name__)
     api = Api(app)
-
+    # /user/events/token/data
     api.add_resource(News.ID, '/news/id/<id>')
     api.add_resource(News.URL, '/news/url/<path:url>')
     api.add_resource(News.LastUrl, '/news/lasturl/<path:lasturl>')
     api.add_resource(News.RangeTimestamp, '/news/range_timestamp/<recent>/<oldest>')
     api.add_resource(News.URL.Bulk, '/news/url/bulk/<amount>')
-    api.add_resource(Auth, '/auth/<string:email>/<string:password>')
+
+    #api.add_resource(Auth, '/auth/<string:email>/<string:password>')
+    api.add_resource(Auth, "/auth/<string:email>/<string:sn>/<string:id>")
     api.add_resource(Auth.Register, '/auth/register/<string:email>/<string:password>')
     api.add_resource(Auth.Test, '/auth/test')
 
+    api.add_resource(AppUser.Events, '/user/events/<int:user_id>/<data>')
+    #api.add_resource(User.Events, '/user/<string:token>/events/<data>')
     app.run(port=4243, debug=False, host=host)
