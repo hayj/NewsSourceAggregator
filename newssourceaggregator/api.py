@@ -274,7 +274,7 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine)
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
-    session = scoped_session(DBSession())
+    session = scoped_session(DBSession)
 
     psswdhash = PasswordHasher()
 
