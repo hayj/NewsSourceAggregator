@@ -25,6 +25,8 @@ DEFAULT_TIME_RANGE = timedelta(days=1)
 DEFAULT_TIME_OLDEST = dt.strftime(dt.utcnow() - DEFAULT_TIME_RANGE, DEFAULT_DATE_FORMAT)
 DEFAULT_TIME_RECENT = dt.utcnow().strftime(DEFAULT_DATE_FORMAT)
 
+TOKENS = []
+
 
 def generateToken():
     """
@@ -104,7 +106,8 @@ class Auth(Resource):
                         "status_code": 400}
         elif sn == "google":
             pass
-        return usr.token
+        TOKENS.append(usr.token)
+        return {"user_token": usr.token, "status_code": 200}
 
     def put(self, email, sn, id):
         if not email:
@@ -133,6 +136,7 @@ class Auth(Resource):
         else:
             return {"error_type": "AuthenticationError(ERROR: Invalid query)",
                     "status_code": 400}
+        TOKENS.append(session.query(User).filter(User.email == email).first().token)
         return {"user_token": session.query(User).filter(User.email == email).first().token,
                 "status_code": 200}
 
@@ -250,10 +254,14 @@ class AppUser(Resource):
             eventcollection.insert({'user_id':user_id, 'event_data':data})
             pass
 
-# eventcollection.insert {user_id:1, data: {axaxaxa}}
 
 if __name__ == '__main__':
     # We create a context for SSL certification
+    host = ''
+    if os.getenv("USER") == "alexis":
+        host = '129.175.25.243'
+    else:
+        host = '129.175.22.71'
     engine = create_engine('sqlite:///sqlalchemy_example_auth.db')
     Base.metadata.create_all(engine)
     Base.metadata.bind = engine
@@ -262,7 +270,6 @@ if __name__ == '__main__':
 
     psswdhash = PasswordHasher()
 
-    host = '129.175.25.243'
     collection = MongoCollection("news_db", "news", indexOn=['url'],
                                  host='localhost', user="Ajod", password="8kp^U_R3", version=__version__)
     eventcollection = MongoCollection("news_db", "events", indexOn=['user_id'],
@@ -278,7 +285,6 @@ if __name__ == '__main__':
     api.add_resource(News.RangeTimestamp, '/news/range_timestamp/<recent>/<oldest>')
     api.add_resource(News.URL.Bulk, '/news/url/bulk/<amount>')
 
-    #api.add_resource(Auth, '/auth/<string:email>/<string:password>')
     api.add_resource(Auth, "/auth/<string:email>/<string:sn>/<string:id>")
     api.add_resource(Auth.Register, '/auth/register/<string:email>/<string:password>')
     api.add_resource(Auth.Test, '/auth/test')
