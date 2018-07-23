@@ -62,33 +62,57 @@ class PasswordHasher:
 
 
 class Auth(Resource):
-    def get(self, email, password):
-        """
-        Endpoint for basic authentication of an already registered user
-        :param email: The user's email address
-        :param password: The user's unciphered password
-        :return: User token from database, which can be subsequently sent to auth/token for next authentications
-        """
+#    def get(self, email, password):
+#        """
+#        Endpoint for basic authentication of an already registered user
+#        :param email: The user's email address
+#        :param password: The user's unciphered password
+#        :return: User token from database, which can be subsequently sent to auth/token for next authentications
+#        """
+#        if not email:
+#            return "ERROR: User not found", 404
+#        usr = session.query(User).filter(User.email == email).first()
+#        if not usr or psswdhash.verify_password(password, usr) is False:
+#            return "ERROR: Incorrect password", 403
+#
+#        return session.query(User).filter(User.email == email).first().token, 201
+
+    def get(self, email, sn, id):
+        # Check if everything is present and viable before checking if it matches the Database
         if not email:
-            return "ERROR: User not found", 404
+            return {"error_type": "AuthenticationError(ERROR: User not found)", "status_code": 400}
+        if not sn:
+            return {"error_type": "AuthenticationError(ERROR: No auth method defined)", "status_code": 400}
+        if not id:
+            return {"error_type": "AuthenticationError(ERROR: No password/id given)", "status_code": 400}
         usr = session.query(User).filter(User.email == email).first()
-        if not usr or psswdhash.verify_password(password, usr) is False:
-            return "ERROR: Incorrect password", 403
+        if usr is None:
+            return {"error_type": "AuthenticationError(ERROR: User not found)",
+                    "status_code": 400}
 
-        return session.query(User).filter(User.email == email).first().token, 201
-
-    # /auth/email/password PUT
-    # /auth/email/sn/id PUT
-    # /auth/bob@bob.fr/sn="Email"/lol
-    # /auth/bob@bob.fr/sn="fb"/98765
+        # Checks with the database according to authentication method
+        if sn == "email":
+            if psswdhash.verify_password(id, usr) is False:
+                return {"error_type": "AuthenticationError(ERROR: Incorrect Password)",
+                        "status_code": 400}
+        elif sn == "fb":
+            if usr.fb_id is None or usr.fb_id != id:
+                return {"error_type": "AuthenticationError(ERROR: Incorrect Facebook id)",
+                        "status_code": 400}
+            elif usr.fb is False:
+                return {"error_type": "AuthenticationError(Error: User did not subscribe using Facebook)",
+                        "status_code": 400}
+        elif sn == "google":
+            pass
+        return usr.token
 
     def put(self, email, sn, id):
         if not email:
-            return "ERROR: User not found", 404
+            return {"error_type": "AuthenticationError(ERROR: User not found)", "status_code": 404}
         if not sn:
-            return "ERROR: No auth method defined", 404
+            return {"error_type": "AuthenticationError(ERROR: No auth method defined)", "status_code": 404}
         if not id:
-            return "ERROR: No password/id given", 404
+            return {"error_type": "AuthenticationError(ERROR: No password/id given)", "status_code": 404}
 
         print("Got args : email = " + email + " sn = " + sn + " id = " + id)
         if session.query(User).filter(User.email == email).first() is not None:
