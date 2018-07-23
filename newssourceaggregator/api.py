@@ -13,6 +13,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from flask_restful import Resource, Api
 from passlib.context import CryptContext
+from sqlalchemy.orm import scoped_session
 from sqlalchemy_declarative import Base, User
 from databasetools.mongo import MongoCollection
 
@@ -105,7 +106,12 @@ class Auth(Resource):
                 return {"error_type": "AuthenticationError(Error: User did not subscribe using Facebook)",
                         "status_code": 400}
         elif sn == "google":
-            pass
+            if usr.google_id is None or usr.google_id != id:
+                return {"error_type": "AuthenticationError(ERROR: Incorrect Google id)",
+                        "status_code": 400}
+            elif usr.google is False:
+                return {"error_type": "AuthenticationError(Error: User did not subscribe using Google)",
+                        "status_code": 400}
         TOKENS.append(usr.token)
         return {"user_token": usr.token, "status_code": 200}
 
@@ -132,7 +138,9 @@ class Auth(Resource):
             session.add(new_user)
             session.commit()
         elif sn == "google":
-            pass
+            new_user = User(email=email, password=None, token=generateToken(), google=True, google_id=id)
+            session.add(new_user)
+            session.commit()
         else:
             return {"error_type": "AuthenticationError(ERROR: Invalid query)",
                     "status_code": 400}
@@ -266,7 +274,7 @@ if __name__ == '__main__':
     Base.metadata.create_all(engine)
     Base.metadata.bind = engine
     DBSession = sessionmaker(bind=engine)
-    session = DBSession()
+    session = scoped_session(DBSession())
 
     psswdhash = PasswordHasher()
 

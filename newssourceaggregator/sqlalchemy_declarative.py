@@ -17,6 +17,8 @@ class User(Base):
     token = Column(String(250), nullable=False)
     fb = Column(Boolean(), nullable=False, default=False)
     fb_id = Column(String(250), nullable=True, default=None)
+    google = Column(Boolean(), nullable=False, default=False)
+    google_id = Column(String(250), nullable=True, default=None)
 
 
 #if __name__ == "__main__":
