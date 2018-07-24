@@ -17,7 +17,7 @@ from sqlalchemy.orm import scoped_session
 from sqlalchemy_declarative import Base, User
 from databasetools.mongo import MongoCollection
 
-__version__ = '0.0.4' # Includes timestamp range request
+__version__ = '0.0.6' # Includes timestamp range request
 MAX_PACKAGE_SIZE = 1000
 
 # We define a default time range to pull news from at 24h from current UTC time
@@ -65,21 +65,6 @@ class PasswordHasher:
 
 
 class Auth(Resource):
-#    def get(self, email, password):
-#        """
-#        Endpoint for basic authentication of an already registered user
-#        :param email: The user's email address
-#        :param password: The user's unciphered password
-#        :return: User token from database, which can be subsequently sent to auth/token for next authentications
-#        """
-#        if not email:
-#            return "ERROR: User not found", 404
-#        usr = session.query(User).filter(User.email == email).first()
-#        if not usr or psswdhash.verify_password(password, usr) is False:
-#            return "ERROR: Incorrect password", 403
-#
-#        return session.query(User).filter(User.email == email).first().token, 201
-
     def get(self, email, sn, id):
         # Check if everything is present and viable before checking if it matches the Database
         if not email:
@@ -175,8 +160,25 @@ class Auth(Resource):
         def get(self, email, password):
             return self.put(email, password)
 
+
+class AppUser(Resource):
+    def get(self, user_id):
+        pass
+
+    class Events(Resource):
+        def post(self, token, data):
+            usr = session.query(User).filter(User.token == token).first()
+            if usr is not None and usr.token == token:
+                eventcollection.insert({'user_email': usr.email,
+                                        'event_data': data})
+            else:
+                return {"error_type": "CommunicationError(ERROR: User not found or invalid token)",
+                        "status_code": 400}
+
+
 # END Authentication API
 # Start of news data API
+
 
 def updateTime():
     global DEFAULT_TIME_OLDEST
@@ -253,23 +255,15 @@ class News(Resource):
                 return dumps(data)
 
 
-class AppUser(Resource):
-    def get(self, user_id):
-        pass
-
-    class Events(Resource):
-        def post(self, user_id, data):
-            eventcollection.insert({'user_id':user_id, 'event_data':data})
-            pass
-
-
 if __name__ == '__main__':
-    # We create a context for SSL certification
     host = ''
     if os.getenv("USER") == "alexis":
         host = '129.175.25.243'
     else:
         host = '129.175.22.71'
+
+    # Initializing the SQLAlchemy database connection. The scoped_session ensures we use one connection/thread
+    # to avoid crashing (SQLite objects can only be used in the thread they were created)
     engine = create_engine('sqlite:///sqlalchemy_example_auth.db')
     Base.metadata.create_all(engine)
     Base.metadata.bind = engine
@@ -297,6 +291,5 @@ if __name__ == '__main__':
     api.add_resource(Auth.Register, '/auth/register/<string:email>/<string:password>')
     api.add_resource(Auth.Test, '/auth/test')
 
-    api.add_resource(AppUser.Events, '/user/events/<int:user_id>/<data>')
-    #api.add_resource(User.Events, '/user/<string:token>/events/<data>')
+    api.add_resource(AppUser.Events, '/user/events/<string:token>/<data>')
     app.run(port=4243, debug=False, host=host)
