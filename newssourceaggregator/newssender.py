@@ -13,7 +13,7 @@ class NewsSender:
 #        cr = pika.PlainCredentials(username='Ajod', password='hello', erase_on_connect=True)
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host, credentials=cr))
         self.channel = self.connection.channel()
-        self.queue = self.channel.queue_declare(queue_name, durable=True)
+        self.queue = self.channel.queue_declare(queue_name, durable=True, passive=True)
         self.routing_key = queue_name
 
     def send(self, message):
@@ -25,8 +25,8 @@ class NewsSender:
                                        ),
                                        body=message)
 
-    def __del__(self):
-        self.connection.close()
+#    def __del__(self):
+#         self.connection.close()
 
 
 # About this file:

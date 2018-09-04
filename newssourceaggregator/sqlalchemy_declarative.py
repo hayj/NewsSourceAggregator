@@ -9,6 +9,9 @@ from sqlalchemy import create_engine
 Base = declarative_base()
 
 
+# If you add any data to the User SQLite blueprint, run this program in order to recreate the database.
+# Note: It is possible in some cases that the database would need to be deleted
+
 class User(Base):
     __tablename__ = 'user'
     id = Column(Integer, primary_key=True)
@@ -21,7 +24,18 @@ class User(Base):
     google_id = Column(String(250), nullable=True, default=None)
 
 
-#if __name__ == "__main__":
+class Team(Base):
+    __tablename__ = 'teams'
+    id = Column(Integer, primary_key=True)
+    token = Column(String(250), nullable = False)
+    name = Column(String(250), nullable=False)
+
+class System(Base):
+    __tablename__ = 'systems'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(250), nullable=False)
+    team = Column(Integer, nullable=False)
+    desc = Column(String(1024), nullable=True)
 
 
 engine = create_engine('sqlite:///sqlalchemy_example_auth.db')

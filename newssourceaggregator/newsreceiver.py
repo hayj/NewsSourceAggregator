@@ -10,6 +10,7 @@ class NewsReceiver:
         self.channel = self.connection.channel()
         self.host = host
         self.queue = self.channel.queue_declare(queue_name, durable=True)
+        print("Messages in queue %d" % self.queue.method.message_count)
         self.routing_key = queue_name
 
     def startListening(self, callback):
@@ -21,3 +22,6 @@ class NewsReceiver:
 
     def createQueue(self, teamname):
         self.channel.queue_declare(queue=teamname + "_rec_queue", durable=True)
+
+
+nr = NewsReceiver()

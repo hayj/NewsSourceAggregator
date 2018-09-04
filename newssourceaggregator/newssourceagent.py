@@ -60,6 +60,7 @@ class NewsSourceAgent:
             self.sender.connection.sleep(self.source.waitTimer)
 
 
+# TODO: Handle incorrect RSS links and dying threads intelligently
 if __name__ == '__main__':
     handle = open('rss_urls.csv')
     data = handle.read()
@@ -74,11 +75,13 @@ if __name__ == '__main__':
         threadnumber += 1
         threadHandles[-1].start()
 
+    """ Those two agents are single tests and can be removed at anytime"""
     nsa = NewsSourceAgent(source=RssFeedPlug("https://www.judgehype.com/nouvelles.xml"), parser=RssParser(CFG_FILE_PATH))
     nnsa = NewsSourceAgent(source=RssFeedPlug("http://www.lefigaro.fr/rss/figaro_actualites.xml", timer=90),
                            parser=RssParser(CFG_FILE_PATH))
     threading.Thread(target=nsa.gatherUrls).start()
     threading.Thread(target=nnsa.gatherUrls).start()
+
     print(threadnumber)
 
     handle.close()
