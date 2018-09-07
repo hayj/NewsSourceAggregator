@@ -6,11 +6,10 @@ class NewsSender:
     channel = None
     message = ''
     queue = None
-    routing_key=''
+    routing_key = ''
 
     def __init__(self, host='localhost', queue_name='news_data_queue'):
         cr = pika.PlainCredentials(username='guest', password='guest', erase_on_connect=True)
-#        cr = pika.PlainCredentials(username='Ajod', password='hello', erase_on_connect=True)
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host, credentials=cr))
         self.channel = self.connection.channel()
         self.queue = self.channel.queue_declare(queue_name, durable=True, passive=True)

@@ -60,19 +60,3 @@ class RssParser(Parser):
                         self.parsedDataList.append(copy(resultstruct))
                     self.parseKeys(klist, items[item])
         return
-#
-#t = RssParser()
-#klist = t.getKeywordList()
-#data = t.parse(filepath="rssflux.json")
-#t.parseKeys(klist, data)
-#
-#links = []
-#for struct in t.parsedDataList:
-#    for key in klist:
-#        if key in struct.datadict and struct.datadict[key] is not None:
-#            links.append(struct.datadict[key])
-#
-#links = list(set(links))
-#links.sort()
-#for link in links:
-#    print(link)

@@ -83,26 +83,19 @@ class DataEncryptor:
         if os.path.exists(filePath):
             jsonfile = open(filePath)
             isEncrypted = False
-#             self.jsonFilename = self.jsonFilename + ".json"
         else:
             jsonfile = open(encryptedFilePath)
             isEncrypted = True
-#             self.jsonFilename = self.jsonFilename + ".encrypted.zip"
 
         if not isEncrypted:
-#             name = os.path.splitext(self.dataDir + '/' + self.jsonFilename)[0]
-#             outputFileName = name + '.encrypted.zip'
             readString = jsonfile.read()
         else:
             log("Unciphering", self)
-#             outputFileName = self.jsonFilename
             readString = decryptFile(encryptedFilePath, self.key,
                                      logger=self.logger, verbose=self.verbose)
 
         log("File " + str(self.jsonFilename) + " contains: \n" + str(readString), self)
         jsonfile.close()
-#         print(readString)
-#         exit()
         self.jsonDataDict = json.loads(readString)
 
         log("Final output file name", self)
@@ -150,7 +143,6 @@ def test1():
 
 
 if __name__ == "__main__":
-#     test1()
     de = DataEncryptor(verbose=False)
     de.seekJson()
 

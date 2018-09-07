@@ -102,25 +102,3 @@ class Parser(abc.ABC):
             raise FileNotFoundError("No .json file found or configured")
 
         return self.keywordlist
-
-
-# TODO: Convert these functions from .ini to .json compatibility
-    # Requires to mention the section even if a section has been specified at init
-#    def addSearchKey(self, section, key):
-#        if self.cfg is not None:
-#            self.cfg.set(section, key)
-#
-#        with open(self.configfile, 'w') as configfile:
-#            self.cfg.write(configfile)
-#        self.getKeywordList()
-#
-#    # Requires to mention the section even if a section has been specified at init
-#    def removeSearchKey(self, section, key):
-#        if self.cfg.has_option(section, key):
-#            self.cfg.remove_option(section, key)
-#
-#        with open(self.configfile, 'w') as configfile:
-#            self.cfg.write(configfile)
-#        self.getKeywordList()
-
-

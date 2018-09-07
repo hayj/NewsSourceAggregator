@@ -29,21 +29,6 @@ DEFAULT_TIME_RECENT = dt.utcnow().strftime(DEFAULT_DATE_FORMAT)
 TOKENS = []
 
 
-# request dispatcher : filer des users aux systemes
-# envoyer events des users aux bons systèmes
-# recevoir requête de news pour user X
-# transférer news à user X
-
-
-# API capable de créer 5 queues/système (RabbitMQ)
-# classe globale, appelle sous API ?
-
-# register les teams => plusieurs sys/slots par team
-
-
-
-
-
 def generateToken():
     """
         Generates the authentication token to be returned to a user for easy connection.
@@ -375,11 +360,7 @@ class News(Resource):
 
 
 if __name__ == '__main__':
-    host = ''
-    if os.getenv("USER") == "alexis":
-        host = '129.175.26.15'
-    else:
-        host = '129.175.22.71'
+    host = '129.175.22.71'
 
     # Initializing the SQLAlchemy database connection. The scoped_session ensures we use one connection/thread
     # to avoid crashing (SQLite objects can only be used in the thread they were created)
@@ -396,15 +377,19 @@ if __name__ == '__main__':
     psswdhash = PasswordHasher()
 
     # This collection stores news articles and their data
+    # /!\ WARNING : find a way to get the admin username and password out of the code /!\
     collection = MongoCollection("news_db", "news", indexOn=['url'],
-                                 host='localhost', user="Ajod", password="8kp^U_R3", version=__version__)
+                                 host='localhost', user="hayj", password="renewal42", version=__version__)
 
     # This collection stores all browsing user browsing habits and actions
     eventcollection = MongoCollection("news_db", "events", indexOn=['user_id'],
-                                      host='localhost', user='Ajod', password="8kp^U_R3", version=__version__)
+                                      host='localhost', user='hayj', password="renewal42", version=__version__)
 
     app = Flask(__name__)
     api = Api(app)
+
+    # To add a parameter, it is good practice and necessary (for any other than "string") to mention the data type
+    # Default is "string"
 
     api.add_resource(News.ID, '/news/id/<id>')
     api.add_resource(News.URL, '/news/url/<path:url>')
