@@ -47,7 +47,7 @@ pathos==0.2.1
 pika==0.11.2
 pox==0.2.3
 ppft==1.6.4.7.1
-psutil==5.4.5
+psutil==5.6.6
 publicsuffix==1.1.0
 pymongo==3.6.1
 pyparsing==2.2.0
