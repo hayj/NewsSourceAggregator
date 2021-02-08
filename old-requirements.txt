@@ -22,7 +22,7 @@ hjsystemtools==0.0.83
 hjwebbrowser==0.0.1
 honeypotdetector==0.0.2
 html2text==2018.1.9
-httplib2==0.11.3
+httplib2==0.19.0
 idna==2.6
 ipgetter==0.7
 itsdangerous==0.24
