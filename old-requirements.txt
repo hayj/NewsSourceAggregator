@@ -70,7 +70,7 @@ systemtools==1.0.2
 tzlocal==1.5.1
 unshortener==0.0.1
 url-normalize==1.3.3
-urllib3==1.22
+urllib3==1.26.5
 urltools==0.3.2
 webcrawler==0.0.3
 Werkzeug==0.14.1
